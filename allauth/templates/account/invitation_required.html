@@ -1,0 +1,18 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Invitation Required" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Invitation Required" %}</h1>
+
+<p>{% trans "An invitation is required to activate this account." %}</p>
+
+{% if no_key %}
+<p>{% trans "No invitation key was provided." %}</p>
+{% elif invalid_key %}
+<p>{% trans "Invalid invitation key." %}</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block extra_loads %}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/top5.css">
+{{ wizard.form.media }}
+{% endblock %}
+
+{% block content %}
+<p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+    <p>So that's how it's going to be.</p>
+    <p>No worries. We'll get you started fast.</p>
+
+<form action="" class='form-horizontal' method="post">{% csrf_token %}
+<table>
+{{ wizard.management_form }}
+{% if wizard.form.forms %}
+    {{ wizard.form.management_form }}
+    {% for form in wizard.form.forms %}
+        {% crispy form %}
+    {% endfor %}
+{% else %}
+    {%  crispy wizard.form %}
+{% endif %}
+</table>
+{% if wizard.steps.prev %}
+<button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "prev step" %}</button>
+{% endif %}
+<input type="submit" value="{% trans 'submit' %}"/>
+</form>
+
+{% endblock %}
+
+{% block extra_javascript %}
+<script src="http://twitter.github.com/hogan.js/builds/2.0.0/hogan-2.0.0.js"></script>
+<script type="text/javascript" src="{% get_static_prefix %}js/top5.js"></script>
+{% endblock %}

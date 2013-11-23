@@ -1,6 +1,8 @@
 from django.conf.urls import patterns, url
 
 from . import views
+from django.views.generic import TemplateView
+from ..forms import FORMS, ProfileSetupWizard, external_import_selected
 
 urlpatterns = patterns("",
     url(r"^email/$", views.email, name="account_email"),
@@ -13,7 +15,12 @@ urlpatterns = patterns("",
 #        "template": "account/password_delete_done.html",
 #    }, name="acct_passwd_delete_done"),
     url(r"^logout/$", views.logout, name="account_logout"),
-    
+
+    url(r"^signup-complete/$", TemplateView.as_view(template_name="account/signup_complete.html")),
+    url(r'^profile-setup/$', ProfileSetupWizard.as_view(FORMS,
+                                                        condition_dict={'favorite_bands': external_import_selected}),
+        name="profile_setup"),
+
     url(r"^confirm_email/(?P<key>\w+)/$", views.confirm_email, name="account_confirm_email"),
     
     # password reset

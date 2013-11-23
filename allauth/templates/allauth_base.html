@@ -1,0 +1,25 @@
+{% extends "site_base.html" %}
+{% load url from future %}
+{%  load static %}  
+
+{% block extra_head %}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/accounts.css" />
+{% endblock %}
+<body>
+{% block body %}
+<div class="jumbotron effect-3">
+<div class="centered_text" id="message_flash">
+	        <div class="message-box">
+        	{% include "_messages.html" %}
+        	</div>
+        	</div>
+<div class='mid_box'>
+{% block content %}
+{% endblock %}
+</div>
+</div>
+{% endblock %}
+{% block extra_body %}
+{% endblock %}
+</body>
+</html>

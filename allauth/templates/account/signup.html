@@ -1,25 +1,55 @@
 {% extends "account/base.html" %}
 
 {% load url from future %}
+{% load bootstrap_tags %}
 {% load i18n %}
+{% load static %}
+{% load socialaccount %}
 
 {% block head_title %}{% trans "Signup" %}{% endblock %}
 
 {% block content %}
-<h1>{% trans "Sign Up" %}</h1>
-
-<p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
-
-<form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
-  {% csrf_token %}
-  {{ form.as_p }}
-  {% if redirect_field_value %}
-  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-  {% endif %}
-  <button type="submit">{% trans "Sign Up" %} &raquo;</button>
-</form>
-
-
+    <h1 style="padding:30px;">Sign Up For An Account</h1>
+    {% providers_media_js %}
+    {% if user.is_authenticated %}
+		{% include "account/snippets/already_logged_in.html" %}
+    {% else %}
+    
+    <p><div id="already"><p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in. </a></p>{% endblocktrans %}
+    	Otherwise, create your account. You can use Facebook:</div></p>
+	
+    
+	<div id="facebook_button"><a href="{% provider_login_url "facebook" method="js_sdk" %}"><img src="{% get_static_prefix %}img/facebook_login_on_texture_12.png"></a></div>
+	<p><div id="already">Or just sign up for an account:</div></p>
+        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+            <fieldset>
+                {{ form|as_bootstrap }}
+            </fieldset>
+            {% csrf_token %}
+            
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+            	
+                <button type="submit" class="btn primary">{% trans "Sign Up" %}</button>
+            
+        </form>
+        
+         
+        
+        <p>By clicking "Sign Up", you are indicating that you have read and agree</p><p> to some reasonable <a href={% url 'terms' %}>Terms of Use</a> and a human-oriented Privacy Policy</a>.</p>
+        <p> </p>
+        <p>{% blocktrans %}If you have any trouble creating your account, contact us at <a href="mailto:george@linernotes.com">george@linernotes.com</a>.{% endblocktrans %}</p>
+    {% endif %}
+	</div>
 {% endblock %}
 
-
+{% block extra_body %}
+    <script type="text/javascript">
+        $(function(){
+            $("#id_username").focus();
+            $(".help-block-inline").wrap("<p>");
+        });
+    </script>
+ 
+{% endblock %}

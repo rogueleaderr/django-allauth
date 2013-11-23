@@ -1,0 +1,17 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}{% trans "What Next?" %}{% endblock %}
+
+{% block body %}
+    <h1>{% trans "What Next?" %}</h1>
+    
+    {% if user.is_authenticated %}
+        <p>Now let's talk a little bit about how LinerNotes works. You can think of LinerNotes as as a "home base" for online muisc. Come here and we'll satisfy your every music need (or point you to someone who can.)</p>
+        <p>LinerNotes is made up of a bunch of "baseball cards" that have all the essential facts about artists, albums, and songs. Like baseball cards, you can either read the cards to learn about a band, or you can grab your favorites and build a collection.</p>
+        <p>Why? Collections help you remember your favorite stuff, find it again quickly, and share it with your friends easily.</p>
+        <p>Plus, once you make a collection we'll make  you a sweet custom playlist for everything in that collection.</p>
+    {% endif %}
+{% endblock %}

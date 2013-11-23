@@ -1,0 +1,36 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load static %}
+{% load socialaccount %}
+
+{% block head %}
+{{ wizard.form.media }}
+{% endblock %}
+
+{% block content %}
+<p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+    <h1>Fantastic</h1>
+
+<div id="facebook_button"><a href="{% provider_login_url "facebook" method="js_sdk" %}"><img src="{% get_static_prefix %}img/facebook_login_on_texture_12.png"></a></div>
+
+    <p>Okay, the very last thing we need to get started is your email address:</p>
+<form action="" method="post">{% csrf_token %}
+<table>
+{{ wizard.management_form }}
+{% if wizard.form.forms %}
+    {{ wizard.form.management_form }}
+    {% for form in wizard.form.forms %}
+        {{ form }}
+    {% endfor %}
+{% else %}
+    {{ wizard.form }}
+{% endif %}
+</table>
+{% if wizard.steps.prev %}
+
+<button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "first step" %}</button>
+<button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "prev step" %}</button>
+{% endif %}
+<input type="submit" value="{% trans "Rock on" %}"/>
+</form>
+{% endblock %}

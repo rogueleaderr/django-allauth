@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect, Http404
@@ -138,7 +139,7 @@ class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
                                                   reverse("account_login"),
                                                   self.redirect_field_name)
         redirect_field_name = self.redirect_field_name
-        redirect_field_value = self.request.REQUEST.get(redirect_field_name)
+        redirect_field_value = reverse(settings.PROFILE_SETUP_LOCATION)
         ret.update({"login_url": login_url,
                     "redirect_field_name": redirect_field_name,
                     "redirect_field_value": redirect_field_value})
