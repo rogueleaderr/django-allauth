@@ -65,3 +65,4 @@ import sys
 app_settings = AppSettings('SOCIALACCOUNT_')
 app_settings.__name__ = __name__
 sys.modules[__name__] = app_settings
+#import ipdb ; ipdb.set_trace()

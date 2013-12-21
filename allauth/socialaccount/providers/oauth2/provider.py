@@ -18,6 +18,7 @@ class OAuth2Provider(Provider):
     def get_scope(self):
         settings = self.get_settings()
         scope = settings.get('SCOPE')
+        #import ipdb ; ipdb.set_trace()
         if scope is None:
             scope = self.get_default_scope()
         return scope

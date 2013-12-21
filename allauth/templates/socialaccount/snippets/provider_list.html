@@ -1,19 +1,28 @@
 {% load socialaccount %}
+{% load static %}
 
 {% for provider in socialaccount.providers %}
-{% if provider.id == "openid" %}
-{% for brand in provider.get_brands %}
-<li>
-  <a title="{{brand.name}}" 
-     class="socialaccount_provider {{provider.id}} {{brand.id}}" 
-     href="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
-     >{{brand.name}}</a>
-</li>
-{% endfor %}
-{% endif %}
-<li>
-  <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}}" 
-     href="{% provider_login_url provider.id process=process %}">{{provider.name}}</a>
-</li>
+    {% if provider.id == "openid" %}
+        {% for brand in provider.get_brands %}
+            <li>
+                <a title="{{brand.name}}"
+                   class="socialaccount_provider {{provider.id}} {{brand.id}}"
+                   href="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
+                        >{{brand.name}}</a>
+            </li>
+        {% endfor %}
+
+    {% elif provider.id == "facebook" %}
+
+        <li class="fb_holder">
+            <div  id="facebook_button flex-p"><a href="{% provider_login_url "facebook" method="js_sdk" %}"><img src="{% get_static_prefix %}img/facebook_login.png"></a></div>
+            {% providers_media_js %}
+        </li>
+    {% else %}
+        <li>
+            <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}}"
+               href="{% provider_login_url provider.id process=process %}">{{provider.name}}</a>
+        </li>
+    {% endif %}
 {% endfor %}
 
