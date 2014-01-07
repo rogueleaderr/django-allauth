@@ -1,0 +1,90 @@
+{% extends "site_base.html" %}
+
+{% load url from future %}
+{% load i18n %}
+{% load static %}
+{% load socialaccount %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/signup.css" />
+{% endblock %}
+
+{% block body %}
+
+    <div class="summary-wrapp">
+
+    <div class="summary-main">
+    <div class="wrapper-main">
+
+        <!-- search result wrapp open -->
+        <div class="search-result-wrapp">
+            <div class="container">
+                <div class="row">
+                    <div class="message-box">
+                        {% include "_messages.html" %}
+                    </div>
+                    <div class="col-md-12 search-result-top sign_wrap">
+                        <h2>Sign Up</h2>
+
+                        <h3>It’s time to sign up for a Linernotes account.</h3>
+                        <h3>Signing up let’s you build your own custom
+                            collections and generate personalized playlists. </h3>
+
+                        {% providers_media_js %}
+                        {% if user.is_authenticated %}
+                            {% include "account/snippets/already_logged_in.html" %}
+                        {% else %}
+
+                        <h1>You can sign up with</h1>
+                            <a class="fb_bg" href="{% provider_login_url "facebook" method="js_sdk" %}"><img src="{% get_static_prefix %}img/facebook_login.png"></a>
+
+                        <h1>or enter your</h1>
+                            <div class="row">
+                                <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+                                    {% crispy form %}
+                                    {% csrf_token %}
+                                    {% if redirect_field_value %}
+                                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                                    {% endif %}
+
+                                </form>
+                            </div>
+                            <!--
+                            <button type="submit" class="btn primary">{% trans "Sign Up" %}</button>
+                            <div class="col-lg-12"><input name="" type="text" class="search_box" placeholder="Username"></div>
+                            <div class="col-lg-12"><input name="" type="email" class="search_box" placeholder="Email"></div>
+                            <div class="col-lg-12"><input name="" type="password" class="search_box" placeholder="Password"></div>
+                            <div class="col-lg-12"><input name="" type="password" class="search_box" placeholder="Confirm Password"></div>
+                            <div class="col-lg-12"><input name="" type="button" class="btn" value="Sign Up " ></div>
+                            -->
+
+                        <h6>By clicking "Sign Up", you are indicating that you have read and agree
+                            to some reasonable Terms of Use and a human-oriented Privacy Policy.
+                        </h6>
+                        <h6>
+                            If you have any trouble creating your account, contact us at <a href="mailto:george@linernotes.com">george@linernotes.com</a>.
+                        </h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- search result wrapp close -->
+{% endblock %}
+
+{% block extra_body %}
+    <script type="text/javascript">
+        $(function(){
+            $("#id_username").focus();
+            $(".help-block-inline").wrap("<p>");
+        });
+    </script>
+
+{% endblock %}
+
+<!-- html code for summary page open -->
+

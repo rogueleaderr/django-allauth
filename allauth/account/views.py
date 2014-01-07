@@ -12,6 +12,9 @@ from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import redirect
 
+from crispy_forms.layout import Layout, Field, HTML, Fieldset, Div, Submit, Hidden
+from crispy_forms.helper import FormHelper
+
 from ..exceptions import ImmediateHttpResponse
 from ..utils import get_user_model
 
@@ -112,7 +115,7 @@ class CloseableSignupMixin(object):
 
 class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
                  FormView):
-    template_name = "account/signup.html"
+    template_name = "forms/sign_up.html"
     form_class = SignupForm
     redirect_field_name = "next"
     success_url = None
@@ -132,14 +135,22 @@ class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
 
     def get_context_data(self, **kwargs):
         form = kwargs['form']
+        
         form.fields["email"].initial = self.request.session \
             .get('account_verified_email', None)
+        
+        form.helper = FormHelper()
+        form.helper.label_class = 'col-lg-2'
+        form.helper.field_class = 'col-lg-12'
+        form.form_tag = False
+        form.helper.add_input(Submit('submit', 'Signup', css_class="btn primary"))
         ret = super(SignupView, self).get_context_data(**kwargs)
         login_url = passthrough_next_redirect_url(self.request,
                                                   reverse("account_login"),
                                                   self.redirect_field_name)
         redirect_field_name = self.redirect_field_name
         redirect_field_value = reverse(settings.PROFILE_SETUP_LOCATION)
+        form.helper.add_input(Hidden(redirect_field_name, redirect_field_value))
         ret.update({"login_url": login_url,
                     "redirect_field_name": redirect_field_name,
                     "redirect_field_value": redirect_field_value})
