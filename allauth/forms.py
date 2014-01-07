@@ -1,7 +1,7 @@
-from crispy_forms.layout import Layout, Field, HTML, Fieldset, Div
+from crispy_forms.layout import Layout, Field, HTML, Fieldset, Div, Submit
 from django.contrib.formtools.wizard.views import SessionWizardView
 from django.contrib.localflavor.us.forms import USZipCodeField
-from django.forms import ModelForm, HiddenInput
+from django.forms import ModelForm, HiddenInput, BooleanField
 
 from crispy_forms.helper import FormHelper
 from profiles.models import Profile
@@ -20,10 +20,42 @@ from django import forms
 class ProfileSetupForm1(ModelForm):
 
     zipcode = USZipCodeField(required=False)
+    private = BooleanField(initial=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ProfileSetupForm1, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.form_tag = False
+        self.helper.layout = Layout(
+            Fieldset(
+                Div(Field("dumb", placeholder="Name", css_class="search_box"), css_class="row"),
+                Div(Field("name", placeholder="Name", css_class="search_box"), css_class="row"),
+                Div(Field("age", placeholder="Age", css_class="col-lg-6"),
+                    Field("gender", css_class="col-lg-6 dropdown-select selecte-sub"),
+                    css_class="row"
+                ),
+                Div(Field("country", css_class="col-lg-12 dropdown-select"), css_class="row"),
+                Div(Div(Field("zipcode", placeholder="Zipcode", css_class="search_box"), css_class="col-lg-6"), css_class="row"),
+                Div(Div(HTML("<p>By defualt, your profile will be publicly visible so you can show of your great taste to the world. </p>"),
+                        css_class="col-lg-12"),
+                    Div(HTML("<h4>To hide your profile check this box :</h4>"),
+                        Field("private", css_class="checkbox-myClass"),
+
+                        css_class="col-lg-12"),
+                    Div(HTML("<p>Linernotes can send you occasional helpful emails letting you know about concerts, new releases, great playlists etc. </p>"),
+                        css_class="col-lg-12"),
+                    Div(HTML("<h4>To receive these emails check here :</h4>"),
+                        Field("receive_digests", css_class="checkbox-myClass"),
+                        css_class="col-lg-12"),
+                    css_class="row text-left sub-wrap"
+                ),
+            )
+        )
+        self.helper.add_input(Submit('submit', 'Next Step', css_class="btn primary"))
 
     class Meta:
         model = Profile
-        fields = ["username", "name", "location", "country", "gender", "age", "receive_digests"]
+        fields = ["name", "country", "gender", "age", "receive_digests"]
 
 
 class ProfileSetupForm2(forms.Form):
@@ -86,7 +118,7 @@ FORMS = [("initial_info", ProfileSetupForm1),
          ("favorite_bands", ProfileSetupForm3),
          ]
 
-TEMPLATES = {k[0]: "account/signup_form_{}.html".format(i+1) for i,k in enumerate(FORMS)}
+TEMPLATES = {k[0]: "forms/signup_form_{}.html".format(i+1) for i,k in enumerate(FORMS)}
 
 
 class ProfileSetupWizard(SessionWizardView):
