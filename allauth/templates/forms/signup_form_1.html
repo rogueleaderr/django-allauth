@@ -5,6 +5,7 @@
 
 {% block extra_head %}
     <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/profile_setup.css" />
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/style.css" />
     {{ wizard.form.media }}
 {% endblock %}
 
@@ -33,12 +34,67 @@
                                     {% crispy form %}
                                 {% endfor %}
                             {% else %}
-                                {% crispy wizard.form %}
+                                {{ form.non_field_errors }}
+                                <div class="row">
+                                    {{ form.name.errors }}
+
+                                    {{ form.name }}
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        {{ form.age.errors }}
+                                        {{ form.age }}
+                                    </div>
+
+                                    <div class="col-lg-6 dropdown-select selecte-sub">
+                                        <span>Gender:</span>
+                                        {{ form.gender.errors }}
+                                        {{ form.gender }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-12 dropdown-select">
+                                        <span>Country:</span>
+                                        {{ form.country.errors }}
+                                        {{ form.country }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        {{ form.zipcode.errors }}
+                                        {{ form.zipcode }}
+                                    </div>
+                                </div>
+
+                                <div class="row text-left sub-wrap">
+
+                                    <div class="col-lg-12">
+                                        <p>By default, your profile will be publicly visible so you can show of your great taste to the world. </p>
+                                    </div>
+
+                                    <div class="col-lg-12">
+                                        <h4>To hide your profile check this box :</h4>
+                                        {{ form.private.errors }}
+                                        {{ form.private }}
+                                    </div>
+
+                                    <div class="col-lg-12">
+                                        <p>Linernotes can send you occasional helpful emails letting you know about concerts, new releases, great playlists etc. </p>
+                                    </div>
+
+                                    <div class="col-lg-12">
+                                        <h4>To receive these emails check here :</h4>
+                                        {{ form.receive_digests.errors }}
+                                        {{ form.receive_digests }}
+                                    </div>
+                                </div>
+
                             {% endif %}
-                            {% if wizard.steps.prev %}
-                                <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "prev step" %}</button>
-                            {% endif %}
-                            <input type="button" value="Next Step" class="btn2" name="">
+
+                            <input type="submit" value="Next Step" class="btn2" name="">
 
                         </form>
 
@@ -53,48 +109,17 @@
 
 {% endblock %}
 
+
+{% block extra_javascript %}
+    <script type="text/javascript" src="{% get_static_prefix %}js/Selectyze.jquery.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.selectyze1').Selectyze({
+                theme : 'skype'
+            });
+        });
+    </script>
+{% endblock %}
 <!--
-<div class="row"><input name="" type="text" class="search_box" placeholder="Name"></div>
 
-
-<div class="row">
-<div class="col-lg-6"><input name="" type="text" class="search_box" placeholder="Age"> </div>
-
-<div class="col-lg-6 dropdown-select selecte-sub"> <span>Gender:</span>
-<select name="style1" class="selectyze1">
-<option value="0">M</option>
-<option value="1">F</option>
-</select>   
-</div> 
-</div>
-
-<div class="row">
-<div class="col-lg-12 dropdown-select"> <span>Country:</span>
-<select name="style1" class="selectyze1">
-<option value="0">Norway</option>
-<option value="1">Norway</option>
-</select>   
-
-
-
-</div> 
-</div>
-
-<div class="row">
-<div class="col-lg-6"><input name="" type="text" class="search_box" placeholder="Zipcode"> </div>
-</div>
-
-
-
-<div class="row text-left sub-wrap">
-
-<div class="col-lg-12"> <p>By defualt, your profile will be publicly visible so you can show of your great taste to the world. </p> </div>
-
-<div class="col-lg-12"> <h4>To hide your profile check this box :</h4> <input type="checkbox" class="checkbox-myClass"> </div>
-
-<div class="col-lg-12">  <p>Linernotes can send you occasional helpful emails letting you know about concerts, new releases, great playlists etc. </p> </div>
-
- <div class="col-lg-12"> <h4>To receive these emails check here :</h4>
-  <input type="checkbox" class="checkbox-myClass"  /></div>
-</div>
 -->

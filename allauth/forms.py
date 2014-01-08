@@ -5,7 +5,7 @@ from django.forms import ModelForm, HiddenInput, BooleanField
 
 from crispy_forms.helper import FormHelper
 from profiles.models import Profile
-from idios.views import start_lastfm_import
+from idios.views import start_lastfm_import, set_initial_type_positions
 from django.shortcuts import redirect
 
 import account.app_settings
@@ -20,7 +20,7 @@ from django import forms
 class ProfileSetupForm1(ModelForm):
 
     zipcode = USZipCodeField(required=False)
-    private = BooleanField(initial=False)
+
 
     def __init__(self, *args, **kwargs):
         super(ProfileSetupForm1, self).__init__(*args, **kwargs)
@@ -36,7 +36,7 @@ class ProfileSetupForm1(ModelForm):
                 ),
                 Div(Field("country", css_class="col-lg-12 dropdown-select"), css_class="row"),
                 Div(Div(Field("zipcode", placeholder="Zipcode", css_class="search_box"), css_class="col-lg-6"), css_class="row"),
-                Div(Div(HTML("<p>By defualt, your profile will be publicly visible so you can show of your great taste to the world. </p>"),
+                Div(Div(HTML("<p>By default, your profile will be publicly visible so you can show of your great taste to the world. </p>"),
                         css_class="col-lg-12"),
                     Div(HTML("<h4>To hide your profile check this box :</h4>"),
                         Field("private", css_class="checkbox-myClass"),
@@ -55,14 +55,21 @@ class ProfileSetupForm1(ModelForm):
 
     class Meta:
         model = Profile
-        fields = ["name", "country", "gender", "age", "receive_digests"]
+        fields = ["name", "country", "gender", "age", "private", "receive_digests"]
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Name', 'class': 'text_input_box',}),
+            'age': forms.TextInput(attrs={'placeholder': 'Age', 'class': 'text_input_box',}),
+            'gender': forms.Select(attrs={'class': 'selectyze1', "name": "style1"}),
+            'country': forms.Select(attrs={'class': 'selectyze1', "name": "style1"}),
+            'zipcode': forms.TextInput(attrs={'placeholder': 'Zipcode', 'class': 'text_input_box',}),
+            'private': forms.CheckboxInput(attrs={'class': 'checkbox-myClass',}),
+            'receive_digests': forms.CheckboxInput(attrs={'class': 'checkbox-myClass',}),
+        }
 
 
 class ProfileSetupForm2(forms.Form):
-    facebook = forms.BooleanField(required=False)
-    spotify = forms.BooleanField(required=False)
-    lastfm = forms.CharField(max_length=100, required=False)
-
+        lastfm = forms.CharField(max_length=100, required=False,
+                                 widget=forms.TextInput(attrs={'placeholder': 'Last.fm Username'}))
 
 class ProfileSetupForm3(forms.Form):
 
@@ -81,21 +88,21 @@ class ProfileSetupForm3(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ProfileSetupForm3, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.label_class = 'col-lg-2'
-        self.helper.field_class = 'col-lg-10'
+
+        self.helper.field_class = 'col-lg-12'
         self.form_tag = False
         self.helper.layout = Layout(
             Fieldset(
-                "<p>All you have to do is tell us <strong>five</strong> bands that you like</p>",
-                Div(Field("band_1", css_class="band-typeahead"),
+                "",  # no legend
+                Div(Field("band_1", css_class="band-typeahead", placeholder="#1"),
                     css_class="row col-sm-12"),
-                Div(Field("band_2", css_class="band-typeahead"),
+                Div(Field("band_2", css_class="band-typeahead", placeholder="#2"),
                     css_class="row col-sm-12"),
-                Div(Field("band_3", css_class="band-typeahead"),
+                Div(Field("band_3", css_class="band-typeahead", placeholder="#3"),
                     css_class="row col-sm-12"),
-                Div(Field("band_4", css_class="band-typeahead"),
+                Div(Field("band_4", css_class="band-typeahead", placeholder="#4"),
                     css_class="row col-sm-12"),
-                Div(Field("band_5", css_class="band-typeahead"),
+                Div(Field("band_5", css_class="band-typeahead", placeholder="#5"),
                     css_class="row col-sm-12"),
                 Field("band_id_1"),
                 Field("band_id_2"),
@@ -104,6 +111,7 @@ class ProfileSetupForm3(forms.Form):
                 Field("band_id_5"),
                 )
             )
+        self.helper.add_input(Submit('submit', "I'm Finished (Woohoo)", css_class="btn2"))
 
 
 class ProfileSetupForm4(forms.Form):
@@ -140,10 +148,13 @@ class ProfileSetupWizard(SessionWizardView):
         profile.save()
         try:
             fav_form = form_list[2]
+            order = []
             for item in ["band_id_{}".format(x) for x in range(1,5)]:
                 fav_uri = fav_form.cleaned_data[item]
+                make_favorite(request.user, fav_uri)
+                order.append(fav_uri)
                 # TODO rogueleaderr use models instead of tags for this
-                make_favorite(self.request.user, fav_uri, tags=["$top_5_artists"])
+            set_initial_type_positions(self.request.user, order, "music-artist")
         except IndexError:
             pass
         return redirect("what_next")

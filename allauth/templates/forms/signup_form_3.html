@@ -1,0 +1,116 @@
+{% extends "site_base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block extra_head %}
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/profile_setup.css" />
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/style.css" />
+    {{ wizard.form.media }}
+{% endblock %}
+
+
+{% block body %}
+<!-- html code for summary page open -->
+    <div class="summary-wrapp">
+
+    <div class="summary-main">
+        <div class="wrapper-main">
+            <!-- search result wrapp open -->
+            <div class="search-result-wrapp">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12 search-result-top sign_wrap">
+                            <p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+                           <h2>Get your collection started</h2>
+
+
+                            <h3>Pick a few of your favourite bands.<br>
+
+                                Don’t stress on picking your absolute favs.</h3>
+
+                            <p>(You can easily change this later)</p>
+
+                            <br>
+                            <p>Just start typing an artist name and select the right artist from<br>
+                                the dropdown that appears</p>
+
+                            <br>
+
+                            <div class="row">
+                                <div class="col-md-6 col-md-offset-3">
+                                    <div class="tab-content faq-cat-content">
+                                        <div class="tab-pane active in fade" id="faq-cat-1">
+                                            <div class="panel-group" id="accordion-cat-1">
+
+                                            <!--
+                                                <div class="panel panel-default panel-faq">
+                                                    <div class="panel-heading">
+                                                        <a data-toggle="collapse" data-parent="#accordion-cat-1" href="#faq-cat-1-sub-1">
+                                                            <h4 class="panel-title text-left">
+                                                                1. Okker
+                                                                <span class="pull-right"></span>
+                                                            </h4>
+                                                        </a>
+                                                    </div>
+                                                    <div id="faq-cat-1-sub-1" class="panel-collapse collapse">
+                                                        <div class="panel-body">
+
+                                                            <ul>
+                                                                <li>Okkervil River <span class="sp-cont">2001</span> </li>
+                                                                <li>Okkervil River <span class="sp-cont">2001</span> </li>
+                                                                <li>Okkervil River <span class="sp-cont">2001</span> </li>
+                                                                <li>Okkervil River <span class="sp-cont">2001</span> </li>
+                                                                <li>Okkervil River <span class="sp-cont">2001</span> </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                -->
+                                                <form action="" method="post">{% csrf_token %}
+                                                    {{ wizard.management_form }}
+                                                    {% if wizard.form.forms %}
+                                                        {{ wizard.form.management_form }}
+                                                        {% for form in wizard.form.forms %}
+                                                            {% crispy form %}
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        {% crispy form %}
+
+                                                    {% endif %}
+                                                </form>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- search result wrapp close -->
+
+
+{% endblock %}
+
+
+{% block extra_javascript %}
+    <script type="text/javascript" src="{% get_static_prefix %}js/Selectyze.jquery.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.selectyze1').Selectyze({
+                theme : 'skype'
+            });
+        });
+    </script>
+    <script src="http://twitter.github.com/hogan.js/builds/2.0.0/hogan-2.0.0.js"></script>
+    <script type="text/javascript" src="{% get_static_prefix %}js/top5.js"></script>
+{% endblock %}
+<!--
+
+-->

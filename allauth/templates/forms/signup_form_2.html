@@ -1,0 +1,94 @@
+{% extends "site_base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block extra_head %}
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/profile_setup.css" />
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/style.css" />
+    {{ wizard.form.media }}
+{% endblock %}
+
+
+{% block body %}
+<!-- html code for summary page open -->
+    <div class="summary-wrapp">
+
+    <div class="summary-main">
+        <div class="wrapper-main">
+            <!-- search result wrapp open -->
+            <div class="search-result-wrapp">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12 search-result-top sign_wrap">
+                            <p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+                            <h2>Get your collection started</h2>
+                            <div class="col-lg-12">
+                                Okey then, Krister from Norway. <br>
+                                We’re going to get your collections started so you can see what Linernotes has to offer.<br>
+                                The easiest way to do this is to import your likes from another service.<br>
+                                <br>
+                            </div>
+                            <h1>Click one of these services to start importing </h1>
+                            <div class="img_cover">
+                                <div class="row">
+                                    <div class="col-lg-4"><a href="#"><img src="{% get_static_prefix %}images/facebook_img.jpg" ></a></div>
+                                    <div class="col-lg-4"><a href="#"><img src="{% get_static_prefix %}images/spotify_img.jpg" ></a></div>
+                                    <div class="col-lg-4"><a href="#"><img src="{% get_static_prefix %}images/last_img.jpg" ></a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-3"> </div>
+                        <div class="col-lg-6 text-center">
+                            <p>Don’t use any of these services?<br>
+                            That’s okey!</p>
+                        </div>
+                        <div class="col-lg-3"> </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="wrap-cover">
+                            <form action="" method="post">{% csrf_token %}
+                                {{ wizard.management_form }}
+                                {% if wizard.form.forms %}
+                                    {{ wizard.form.management_form }}
+                                    {% for form in wizard.form.forms %}
+                                        {% crispy form %}
+                                    {% endfor %}
+                                {% else %}
+                                    {{ form }}
+
+                                {% endif %}
+
+                                <input type="submit" value="Just Click Here" class="btn" name="">
+                            </form>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- search result wrapp close -->
+
+
+{% endblock %}
+
+
+{% block extra_javascript %}
+    <script type="text/javascript" src="{% get_static_prefix %}js/Selectyze.jquery.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.selectyze1').Selectyze({
+                theme : 'skype'
+            });
+        });
+    </script>
+{% endblock %}
+<!--
+
+-->
