@@ -1,16 +1,14 @@
 from crispy_forms.layout import Layout, Field, HTML, Fieldset, Div, Submit
 from django.contrib.formtools.wizard.views import SessionWizardView
 from django.contrib.localflavor.us.forms import USZipCodeField
-from django.forms import ModelForm, HiddenInput, BooleanField
-
+from django.forms import ModelForm, HiddenInput
 from crispy_forms.helper import FormHelper
-from profiles.models import Profile
-from idios.views import start_lastfm_import, set_initial_type_positions
 from django.shortcuts import redirect
 
-import account.app_settings
-from account.utils import complete_signup
+from profiles.models import Profile
+from idios.views import start_lastfm_import, set_initial_type_positions, start_facebook_artist_import
 from favorites.favorites_helpers import make_favorite
+
 
 __author__ = 'rogueleaderr'
 
@@ -19,7 +17,8 @@ from django import forms
 
 class ProfileSetupForm1(ModelForm):
 
-    zipcode = USZipCodeField(required=False)
+    zipcode = USZipCodeField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Zipcode',
+                                                                           'class': 'text_input_box',}))
 
 
     def __init__(self, *args, **kwargs):
@@ -61,7 +60,6 @@ class ProfileSetupForm1(ModelForm):
             'age': forms.TextInput(attrs={'placeholder': 'Age', 'class': 'text_input_box',}),
             'gender': forms.Select(attrs={'class': 'selectyze1', "name": "style1"}),
             'country': forms.Select(attrs={'class': 'selectyze1', "name": "style1"}),
-            'zipcode': forms.TextInput(attrs={'placeholder': 'Zipcode', 'class': 'text_input_box',}),
             'private': forms.CheckboxInput(attrs={'class': 'checkbox-myClass',}),
             'receive_digests': forms.CheckboxInput(attrs={'class': 'checkbox-myClass',}),
         }
@@ -69,7 +67,15 @@ class ProfileSetupForm1(ModelForm):
 
 class ProfileSetupForm2(forms.Form):
         lastfm = forms.CharField(max_length=100, required=False,
-                                 widget=forms.TextInput(attrs={'placeholder': 'Last.fm Username'}))
+                                 widget=forms.TextInput(attrs={'placeholder': 'Last.fm Username',
+                                                               'class': 'text_input_box',}))
+
+        def __init__(self, *args, **kwargs):
+            if "real_name" in kwargs:
+                self.real_name = kwargs.pop("real_name")
+            super(ProfileSetupForm2, self).__init__(*args, **kwargs)
+
+
 
 class ProfileSetupForm3(forms.Form):
 
@@ -130,8 +136,26 @@ TEMPLATES = {k[0]: "forms/signup_form_{}.html".format(i+1) for i,k in enumerate(
 
 
 class ProfileSetupWizard(SessionWizardView):
+
+    def __init__(self, *args, **kwargs):
+        super(ProfileSetupWizard, self).__init__(*args, **kwargs)
+        self.imports_to_run = {}
+
     def get_template_names(self):
         return [TEMPLATES[self.steps.current]]
+
+    def get_form_kwargs(self, step=None):
+        kwargs = {}
+        print("STPP", step)
+        if step == 'import_names':
+            try:
+                real_name = self.get_cleaned_data_for_step('initial_info')['name']
+                kwargs.update({'real_name': real_name,})
+                print("UPTT", kwargs)
+            except TypeError:  # hack to get around the fact that this is called each step to check for band importer selection
+                pass
+
+        return kwargs
 
     def done(self, form_list, **kwargs):
         request = self.request
@@ -142,9 +166,22 @@ class ProfileSetupWizard(SessionWizardView):
                 profile.__dict__[k] = v
         profile.signup_complete = True
         import_form = form_list[1]
-        if import_form.cleaned_data["lastfm"]:
-            start_lastfm_import(import_form.cleaned_data["lastfm"], request.user)
-            profile.lastfm_artists_imported = True
+        if "facebook" in self.imports_to_run:
+            start_facebook_artist_import(self.imports_to_run["facebook"])
+        if "spotify" in self.imports_to_run:
+            start_spotify_import(self.imports_to_run["spotify"])
+        if "lastfm" in self.imports_to_run:
+            cleaned_data = self.get_cleaned_data_for_step('import_names') or {}
+            if "lastfm" in cleaned_data:
+                start_lastfm_import(cleaned_data["lastfm"],
+                                    self.imports_to_run["lastfm"])
+                profile.lastfm_artists_imported = True
+            else:
+                import pdb ; pdb.set_trace()
+        else:
+            import pdb ; pdb.set_trace()
+
+
         profile.save()
         try:
             fav_form = form_list[2]
@@ -161,8 +198,36 @@ class ProfileSetupWizard(SessionWizardView):
 
 #-------- helper functions
 
+
+
+
 def external_import_selected(wizard):
     # see if any external imports were selected
-    cleaned_data = wizard.get_cleaned_data_for_step('import_names') or {}
-    imports_selected = not any([v for v in cleaned_data.values()])
+
+    #
+    # if import fails, fail back to manual select screen
+    imports_selected = True
+    # make sure this the right step
+    try:
+        # throw exception is wrong step or not a POST
+        if not wizard.request.POST["profile_setup_wizard-current_step"] == "import_names":
+            raise KeyError
+    except (KeyError, AttributeError) as e:
+        print e
+        return imports_selected
+    profile = Profile.objects.get(user=wizard.request.user)
+    # .x because apparently image submit button appends to name
+    # trigger the selected import process, confirm that it succeeds.
+    if "facebook.x" in wizard.request.POST:
+        wizard.imports_to_run["facebook"] = wizard.request
+        imports_selected = False
+    elif "spotify.x" in wizard.request.POST:
+        wizard.imports_to_run["spotify"] = wizard.request
+        imports_selected = False
+    elif "lastfm" in wizard.request.POST:
+        wizard.imports_to_run["lastfm"] = wizard.request
+        imports_selected = False
+
+
+    # if import succeeds, end process
     return imports_selected

@@ -4,8 +4,8 @@
 {% load static %}
 
 {% block extra_head %}
+
     <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/profile_setup.css" />
-    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}css/style.css" />
     {{ wizard.form.media }}
 {% endblock %}
 
@@ -21,10 +21,10 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12 search-result-top sign_wrap">
-                    <p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
-                    <h2>Tell Us About Yourself</h2>
-                    <h3>Well, hello there Kristerlima.<br>
-                        Why don’t you tell us a little bit about yourself.</h3>
+                    <p class="step_label">Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+                    <h2>Please Introduce Yourself</h2>
+                    <h3>Well, hello there "{{ request.user.username }}".<br>
+                        Why don’t you tell us a little bit about yourself?</h3>
                     <div class="wrap-cover">
                         <form action="" method="post">{% csrf_token %}
                             {{ wizard.management_form }}
@@ -42,30 +42,32 @@
 
                                 </div>
                                 <div class="row">
-                                    <div class="col-lg-6">
-                                        {{ form.age.errors }}
-                                        {{ form.age }}
-                                    </div>
-
-                                    <div class="col-lg-6 dropdown-select selecte-sub">
-                                        <span>Gender:</span>
-                                        {{ form.gender.errors }}
-                                        {{ form.gender }}
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-lg-12 dropdown-select">
+                                    <div class="col-lg-12 dropdown-select country-select">
                                         <span>Country:</span>
                                         {{ form.country.errors }}
                                         {{ form.country }}
                                     </div>
                                 </div>
-
                                 <div class="row">
+                                    <div class="col-lg-6">
+                                        {{ form.age.errors }}
+                                        {{ form.age }}
+                                    </div>
+
                                     <div class="col-lg-6">
                                         {{ form.zipcode.errors }}
                                         {{ form.zipcode }}
+                                    </div>
+                                </div>
+
+
+
+                                <div class="row">
+
+                                    <div class="col-lg-12 dropdown-select gender-select">
+                                        <span>Gender:</span>
+                                        {{ form.gender.errors }}
+                                        {{ form.gender }}
                                     </div>
                                 </div>
 
@@ -82,7 +84,7 @@
                                     </div>
 
                                     <div class="col-lg-12">
-                                        <p>Linernotes can send you occasional helpful emails letting you know about concerts, new releases, great playlists etc. </p>
+                                        <p>LinerNotes can send you occasional helpful emails letting you know about concerts, new releases, great playlists etc. </p>
                                     </div>
 
                                     <div class="col-lg-12">
