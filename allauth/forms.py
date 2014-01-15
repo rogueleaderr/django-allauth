@@ -1,11 +1,14 @@
 from crispy_forms.layout import Layout, Field, HTML, Fieldset, Div, Submit
+from django.contrib import messages
 from django.contrib.formtools.wizard.views import SessionWizardView
 from django.contrib.localflavor.us.forms import USZipCodeField
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelForm, HiddenInput
 from crispy_forms.helper import FormHelper
 from django.shortcuts import redirect
 
 from profiles.models import Profile
+from allauth.socialaccount.models import SocialAccount
 from idios.views import start_lastfm_import, set_initial_type_positions, start_facebook_artist_import
 from favorites.favorites_helpers import make_favorite
 
@@ -19,7 +22,6 @@ class ProfileSetupForm1(ModelForm):
 
     zipcode = USZipCodeField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Zipcode',
                                                                            'class': 'text_input_box',}))
-
 
     def __init__(self, *args, **kwargs):
         super(ProfileSetupForm1, self).__init__(*args, **kwargs)
@@ -70,11 +72,13 @@ class ProfileSetupForm2(forms.Form):
                                  widget=forms.TextInput(attrs={'placeholder': 'Last.fm Username',
                                                                'class': 'text_input_box',}))
 
+        """
         def __init__(self, *args, **kwargs):
             if "real_name" in kwargs:
                 self.real_name = kwargs.pop("real_name")
+            import pdb ; pdb.set_trace()
             super(ProfileSetupForm2, self).__init__(*args, **kwargs)
-
+        """
 
 
 class ProfileSetupForm3(forms.Form):
@@ -124,9 +128,6 @@ class ProfileSetupForm4(forms.Form):
     email = forms.EmailField()
 
 
-
-
-
 FORMS = [("initial_info", ProfileSetupForm1),
          ("import_names", ProfileSetupForm2),
          ("favorite_bands", ProfileSetupForm3),
@@ -144,6 +145,7 @@ class ProfileSetupWizard(SessionWizardView):
     def get_template_names(self):
         return [TEMPLATES[self.steps.current]]
 
+    """
     def get_form_kwargs(self, step=None):
         kwargs = {}
         print("STPP", step)
@@ -156,6 +158,25 @@ class ProfileSetupWizard(SessionWizardView):
                 pass
 
         return kwargs
+    """
+
+    def get_context_data(self, form, **kwargs):
+        context = super(ProfileSetupWizard, self).get_context_data(form=form, **kwargs)
+        if self.steps.current == "import_names":
+            real_name = self.get_cleaned_data_for_step('initial_info')['name']
+            try:
+                social = SocialAccount.objects.get(user=self.request.user,
+                                                 provider="facebook")
+                fb_connected = True
+            except ObjectDoesNotExist:
+                fb_connected = False
+            context.update({'real_name': real_name,
+                            'fb_connected': fb_connected})
+
+        return context
+
+
+
 
     def done(self, form_list, **kwargs):
         request = self.request
@@ -167,19 +188,21 @@ class ProfileSetupWizard(SessionWizardView):
         profile.signup_complete = True
         import_form = form_list[1]
         if "facebook" in self.imports_to_run:
-            start_facebook_artist_import(self.imports_to_run["facebook"])
-        if "spotify" in self.imports_to_run:
-            start_spotify_import(self.imports_to_run["spotify"])
-        if "lastfm" in self.imports_to_run:
+            what_next = start_facebook_artist_import(self.imports_to_run["facebook"])
+        elif "spotify" in self.imports_to_run:
+            what_next = start_spotify_import(self.imports_to_run["spotify"])
+        elif "lastfm" in self.imports_to_run:
             cleaned_data = self.get_cleaned_data_for_step('import_names') or {}
             if "lastfm" in cleaned_data:
-                start_lastfm_import(cleaned_data["lastfm"],
+                what_next = start_lastfm_import(cleaned_data["lastfm"],
                                     self.imports_to_run["lastfm"])
                 profile.lastfm_artists_imported = True
             else:
                 import pdb ; pdb.set_trace()
         else:
-            import pdb ; pdb.set_trace()
+            messages.add_message(request, messages.INFO, "Added your top 5 artists to your collection. Check them out below!")
+            what_next = redirect("what_next")
+
 
 
         profile.save()
@@ -194,7 +217,7 @@ class ProfileSetupWizard(SessionWizardView):
             set_initial_type_positions(self.request.user, order, "music-artist")
         except IndexError:
             pass
-        return redirect("what_next")
+        return what_next
 
 #-------- helper functions
 

@@ -38,7 +38,12 @@
                             {% include "account/snippets/already_logged_in.html" %}
                         {% else %}
 
-                        <h1>You can use our</h1>
+                        <div id="lockout_area">
+                        <!--If you care enough to circumvent this, you're welcome to sign up. Please send feedback!"-->
+                        <input placeholder="Please enter your invitation passcode">
+                        </div>
+                        <div id="signup_area">
+                            <h1>You can use our</h1>
                             <a class="fb_bg" href="{% provider_login_url "facebook" method="js_sdk" %}"><img src="{% get_static_prefix %}img/facebook_login.png"></a>
 
                         <h1>or choose a</h1>
@@ -64,6 +69,7 @@
                         <h6>By clicking "Sign Up", you are indicating that you have read and agreed
                             to some reasonable Terms of Use and a human-oriented Privacy Policy.
                         </h6>
+                        </div>
                         <h6>
                             If you have any trouble creating your account, contact us at <a href="mailto:george@linernotes.com">george@linernotes.com</a>.
                         </h6>
@@ -76,13 +82,22 @@
         <!-- search result wrapp close -->
 {% endblock %}
 
-{% block extra_body %}
+{% block extra_javascript %}
     <script type="text/javascript">
         $(function(){
             $("#id_username").focus();
             $(".help-block-inline").wrap("<p>");
         });
+
+    var lockoutArea = $("#lockout_area");
+    lockoutArea.keyup(function(event) {
+        if ($("#lockout_area input").val() === "friendship"){
+            lockoutArea.hide();
+            $("#signup_area").show();
+        }
+    });
     </script>
+
 
 {% endblock %}
 

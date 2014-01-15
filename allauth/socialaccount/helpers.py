@@ -121,6 +121,7 @@ def _add_social_account(request, sociallogin):
                                   sociallogin.account)
     next_url = sociallogin.get_redirect_url(request) or default_next
     get_account_adapter().add_message(request, level, message)
+    import pdb ; pdb.set_trace()
     return HttpResponseRedirect(next_url)
 
 

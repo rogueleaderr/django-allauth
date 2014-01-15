@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.sites.models import Site
+from django.forms import PasswordInput
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
 from django.utils.http import base36_to_int
@@ -138,7 +139,7 @@ class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
         
         form.fields["email"].initial = self.request.session \
             .get('account_verified_email', None)
-        
+        form.fields["password2"].widget = PasswordInput(attrs={'placeholder': "Whoa it's your password again"})
         form.helper = FormHelper()
         form.helper.label_class = 'col-lg-2'
         form.helper.field_class = 'col-lg-12'

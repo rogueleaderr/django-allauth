@@ -99,7 +99,6 @@ class FacebookProvider(OAuth2Provider):
                                        " add a SocialApp using the Django"
                                        " admin")
         fb_login_options = self.get_fb_login_options(request)
-        print("FFFFBB", fb_login_options)
         ctx = {'facebook_app': app,
                'facebook_channel_url':
                request.build_absolute_uri(reverse('facebook_channel')),
