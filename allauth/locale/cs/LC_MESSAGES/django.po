@@ -367,7 +367,7 @@ msgid "Reset My Password"
 msgstr "Vyžádat nové heslo"
 
 #: templates/account/password_reset.html:23
-msgid "Please contact us if you have any trouble resetting your password."
+msgid "Please <a href='mailto:george.j.london@gmail.com'>contact us</a> if you have any trouble resetting your password."
 msgstr ""
 "Prosím, kontaktujte nás, pokud máte jakékoliv potíže z resetováním hesla."
 
