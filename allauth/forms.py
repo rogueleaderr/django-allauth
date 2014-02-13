@@ -197,6 +197,7 @@ class ProfileSetupWizard(SessionWizardView):
                 what_next = start_lastfm_import(cleaned_data["lastfm"],
                                     self.imports_to_run["lastfm"])
                 profile.lastfm_artists_imported = True
+                print("LASST start")
             else:
                 import pdb ; pdb.set_trace()
         else:
