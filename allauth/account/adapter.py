@@ -1,6 +1,8 @@
 import warnings
+import json
 
 from django.conf import settings
+from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.template import TemplateDoesNotExist
 from django.contrib.sites.models import Site
@@ -240,6 +242,41 @@ class DefaultAccountAdapter(object):
                                          extra_tags=extra_tags)
             except TemplateDoesNotExist:
                 pass
+
+    def ajax_response(self, request, response, redirect_to=None, form=None):
+        data = {}
+        if redirect_to:
+            status = 200
+            data['location'] = redirect_to
+        if form:
+            if form.is_valid():
+                status = 200
+            else:
+                status = 400
+                data['form_errors'] = form._errors
+            if hasattr(response, 'render'):
+                response.render()
+            data['html'] = response.content.decode('utf8')
+        return HttpResponse(json.dumps(data),
+                            status=status,
+                            content_type='application/json')
+
+    def login(self, request, user):
+        from django.contrib.auth import login
+        # HACK: This is not nice. The proper Django way is to use an
+        # authentication backend
+        if not hasattr(user, 'backend'):
+            user.backend \
+                = "allauth.account.auth_backends.AuthenticationBackend"
+        login(request, user)
+
+    def confirm_email(self, request, email_address):
+        """
+        Marks the email address as confirmed on the db
+        """
+        email_address.verified = True
+        email_address.set_as_primary(conditional=True)
+        email_address.save()
 
 
 def get_adapter():

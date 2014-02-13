@@ -1,8 +1,7 @@
-from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.sites.models import Site
-from django.forms import PasswordInput
-from django.http import HttpResponseRedirect, Http404
+from django.http import (HttpResponseRedirect, Http404,
+                         HttpResponsePermanentRedirect)
 from django.shortcuts import get_object_or_404
 from django.utils.http import base36_to_int
 from django.views.generic.base import TemplateResponseMixin, View, TemplateView
@@ -20,7 +19,7 @@ from ..exceptions import ImmediateHttpResponse
 from ..utils import get_user_model
 
 from .utils import (get_next_redirect_url, complete_signup,
-                    get_login_redirect_url,
+                    get_login_redirect_url, perform_login,
                     passthrough_next_redirect_url)
 from .forms import AddEmailForm, ChangePasswordForm
 from .forms import LoginForm, ResetPasswordKeyForm
@@ -36,16 +35,35 @@ from .adapter import get_adapter
 User = get_user_model()
 
 
+def _ajax_response(request, response, form=None):
+    if request.is_ajax():
+        if (isinstance(response, HttpResponseRedirect)
+                or isinstance(response, HttpResponsePermanentRedirect)):
+            redirect_to = response['Location']
+        else:
+            redirect_to = None
+        response = get_adapter().ajax_response(request,
+                                               response,
+                                               form=form,
+                                               redirect_to=redirect_to)
+    return response
+
+
 class RedirectAuthenticatedUserMixin(object):
     def dispatch(self, request, *args, **kwargs):
         # WORKAROUND: https://code.djangoproject.com/ticket/19316
         self.request = request
         # (end WORKAROUND)
         if request.user.is_authenticated():
-            return HttpResponseRedirect(self.get_authenticated_redirect_url())
-        return super(RedirectAuthenticatedUserMixin, self).dispatch(request,
-                                                                    *args,
-                                                                    **kwargs)
+            redirect_to = self.get_authenticated_redirect_url()
+            response = HttpResponseRedirect(redirect_to)
+            return response
+        else:
+            response = super(RedirectAuthenticatedUserMixin,
+                             self).dispatch(request,
+                                            *args,
+                                            **kwargs)
+        return response
 
     def get_authenticated_redirect_url(self):
         redirect_field_name = self.redirect_field_name
@@ -54,7 +72,21 @@ class RedirectAuthenticatedUserMixin(object):
                                       redirect_field_name=redirect_field_name)
 
 
-class LoginView(RedirectAuthenticatedUserMixin, FormView):
+class AjaxCapableProcessFormViewMixin(object):
+
+    def post(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            response = self.form_valid(form)
+        else:
+            response = self.form_invalid(form)
+        return _ajax_response(self.request, response, form=form)
+
+
+class LoginView(RedirectAuthenticatedUserMixin,
+                AjaxCapableProcessFormViewMixin,
+                FormView):
     form_class = LoginForm
     template_name = "account/login.html"
     success_url = None
@@ -115,8 +147,8 @@ class CloseableSignupMixin(object):
 
 
 class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
-                 FormView):
-    template_name = "forms/sign_up.html"
+                 AjaxCapableProcessFormViewMixin, FormView):
+    template_name = "account/signup.html"
     form_class = SignupForm
     redirect_field_name = "next"
     success_url = None
@@ -136,7 +168,6 @@ class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
 
     def get_context_data(self, **kwargs):
         form = kwargs['form']
-        
         form.fields["email"].initial = self.request.session \
             .get('account_verified_email', None)
         form.fields["password2"].widget = PasswordInput(attrs={'placeholder': "Whoa it's your password again"})
@@ -181,7 +212,15 @@ class ConfirmEmailView(TemplateResponseMixin, View):
     def post(self, *args, **kwargs):
         self.object = confirmation = self.get_object()
         confirmation.confirm(self.request)
-        # Don't -- allauth doesn't tocuh is_active so that sys admin can
+        get_adapter().add_message(self.request,
+                                  messages.SUCCESS,
+                                  'account/messages/email_confirmed.txt',
+                                  {'email': confirmation.email_address.email})
+        if app_settings.LOGIN_ON_EMAIL_CONFIRMATION:
+            resp = self.login_on_confirm(confirmation)
+            if resp:
+                return resp
+        # Don't -- allauth doesn't touch is_active so that sys admin can
         # use it to block users et al
         #
         # user = confirmation.email_address.user
@@ -191,11 +230,37 @@ class ConfirmEmailView(TemplateResponseMixin, View):
         if not redirect_url:
             ctx = self.get_context_data()
             return self.render_to_response(ctx)
-        get_adapter().add_message(self.request,
-                                  messages.SUCCESS,
-                                  'account/messages/email_confirmed.txt',
-                                  {'email': confirmation.email_address.email})
         return redirect(redirect_url)
+
+    def login_on_confirm(self, confirmation):
+        """
+        Simply logging in the user may become a security issue. If you
+        do not take proper care (e.g. don't purge used email
+        confirmations), a malicious person that got hold of the link
+        will be able to login over and over again and the user is
+        unable to do anything about it. Even restoring his own mailbox
+        security will not help, as the links will still work. For
+        password reset this is different, this mechanism works only as
+        long as the attacker has access to the mailbox. If he no
+        longer has access he cannot issue a password request and
+        intercept it. Furthermore, all places where the links are
+        listed (log files, but even Google Analytics) all of a sudden
+        need to be secured. Purging the email confirmation once
+        confirmed changes the behavior -- users will not be able to
+        repeatedly confirm (in case they forgot that they already
+        clicked the mail).
+
+        All in all, opted for storing the user that is in the process
+        of signing up in the session to avoid all of the above.  This
+        may not 100% work in case the user closes the browser (and the
+        session gets lost), but at least we're secure.
+        """
+        user_pk = self.request.session.pop('account_user', None)
+        user = confirmation.email_address.user
+        if user_pk == user.pk and self.request.user.is_anonymous():
+            return perform_login(self.request,
+                                 user,
+                                 app_settings.EmailVerificationMethod.NONE)
 
     def get_object(self, queryset=None):
         if queryset is None:
@@ -550,3 +615,15 @@ class LogoutView(TemplateResponseMixin, View):
                 or get_adapter().get_logout_redirect_url(self.request))
 
 logout = LogoutView.as_view()
+
+
+class AccountInactiveView(TemplateView):
+    template_name = 'account/account_inactive.html'
+
+account_inactive = AccountInactiveView.as_view()
+
+
+class EmailVerificationSentView(TemplateView):
+    template_name = 'account/verification_sent.html'
+
+email_verification_sent = EmailVerificationSentView.as_view()

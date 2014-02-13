@@ -1,3 +1,77 @@
+2014-02-09  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* The custom signup form `save` has been deprecated in favour of a
+	`def signup(request, user)` method.
+
+2014-02-04  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* socialaccount: Added Bitbucket provider.
+
+	* Jack Shedd contributed Tumblr support, thanks!
+
+	* Romanos Tsouroplis contributed Foursquare support, thanks!
+
+2014-01-15  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* "excessivedemon" contributed Flickr support, thanks!
+
+2013-12-26  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* Luis Diego García contributed Amazon and Paypal support, thanks!
+
+2013-12-04  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* Stuart Ross contributed LinkedIn OAuth 2.0 support, thanks!
+
+2013-12-01  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* Version 0.15.0 released.
+
+	* socialaccount: Added `is_auto_signup_allowed` to social account
+	adapter.
+
+2013-11-27  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* facebook: Added a new setting: VERIFIED_EMAIL.
+
+	* socialaccount: a collision on e-mail address when you sign up
+	using a third party social account is now more clearly explained:
+	"An account already exists with this e-mail address.  Please sign
+	in to that account first, then connect your Google account".
+
+2013-11-26  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* account: You are now automatically logged in after confirming
+	your e-mail address during sign up.
+
+2013-11-23  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* account: The `/accounts/login/` view now supports AJAX requests.
+
+	* account: Instead of directly rendering and returning a template,
+	logging in while the account is inactive or not yet confirmed now
+	redirects to two new views: `/accounts/inactive/` respectively
+	`/accounts/confirm-email/`.
+
+	* account: The `account/verification_sent.html` template no longer
+	receives the e-mail address in the context (`email`). Note that a
+	message containing that e-mail address is still emitted using the
+	messages framework.
+
+	* account: The `/accounts/confirm_email/key/` view has been
+	renamed to `/accounts/confirm-email/` (human
+	friendlier). Redirects are in place to handle old still pending
+	confirmations.
+
+2013-11-22  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* facebook: The fbconnect.js script is now more pluggable.
+
+2013-11-19  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* socialaccount: Markus Kaiserswerth contributed a Feedly
+	provider, thanks!
+
 2013-11-18  Raymond Penners  <raymond.penners@intenct.nl>
 
 	* socialaccount: Dropped django-avatar support.

@@ -41,17 +41,25 @@ INSTALLED_APPS = (
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.amazon',
     'allauth.socialaccount.providers.angellist',
+    'allauth.socialaccount.providers.bitbucket',
+    'allauth.socialaccount.providers.feedly',
     'allauth.socialaccount.providers.dropbox',
     'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.flickr',
+    'allauth.socialaccount.providers.foursquare',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.instagram',
     'allauth.socialaccount.providers.linkedin',
+    'allauth.socialaccount.providers.linkedin_oauth2',
     'allauth.socialaccount.providers.openid',
+    'allauth.socialaccount.providers.paypal',
     'allauth.socialaccount.providers.persona',
     'allauth.socialaccount.providers.soundcloud',
     'allauth.socialaccount.providers.stackexchange',
+    'allauth.socialaccount.providers.tumblr',
     'allauth.socialaccount.providers.twitch',
     'allauth.socialaccount.providers.twitter',
     'allauth.socialaccount.providers.vimeo',
@@ -65,4 +73,5 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
+STATIC_ROOT = '/tmp/'  # Dummy
 STATIC_URL = '/static/'
