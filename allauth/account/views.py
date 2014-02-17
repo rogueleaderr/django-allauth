@@ -1,4 +1,5 @@
 from django.core.urlresolvers import reverse, reverse_lazy
+from django import forms
 from django.contrib.sites.models import Site
 from django.http import (HttpResponseRedirect, Http404,
                          HttpResponsePermanentRedirect)
@@ -11,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import redirect
+from django.conf import settings
 
 from crispy_forms.layout import Layout, Field, HTML, Fieldset, Div, Submit, Hidden
 from crispy_forms.helper import FormHelper
@@ -148,7 +150,7 @@ class CloseableSignupMixin(object):
 
 class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
                  AjaxCapableProcessFormViewMixin, FormView):
-    template_name = "account/signup.html"
+    template_name = "forms/sign_up.html"
     form_class = SignupForm
     redirect_field_name = "next"
     success_url = None
@@ -170,7 +172,7 @@ class SignupView(RedirectAuthenticatedUserMixin, CloseableSignupMixin,
         form = kwargs['form']
         form.fields["email"].initial = self.request.session \
             .get('account_verified_email', None)
-        form.fields["password2"].widget = PasswordInput(attrs={'placeholder': "Whoa it's your password again"})
+        form.fields["password2"].widget = forms.PasswordInput(attrs={'placeholder': "Whoa it's your password again"})
         form.helper = FormHelper()
         form.helper.label_class = 'col-lg-2'
         form.helper.field_class = 'col-lg-12'
