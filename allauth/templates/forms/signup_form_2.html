@@ -25,7 +25,7 @@
                             <p class="step_label">Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
                             <h2>Get your collection started</h2>
                             <div class="col-lg-12">
-                                Okay then, {{ wizard.form.real_name}}. <br>
+                                Okay then{% if wizard.form.real_name %}, {{ wizard.form.real_name}}{% else %}{% endif %}. <br>
                                 We’re going to get your collection started so you can see what Linernotes has to offer.<br>
                                 The easiest way to do this is to import your likes from another service.<br>
                                 <br>
@@ -104,7 +104,7 @@
 
 
 {% block extra_javascript %}
-    <script type="text/javascript" src="{% get_static_prefix %}js/top5.js"></script>
+    <script type="text/javascript" src="{% get_static_prefix %}js/profile-setup-import.js"></script>
     <script type="text/javascript">
     var fb_connected = {% if fb_connected %}true{% else %}false{% endif %};
     </script>

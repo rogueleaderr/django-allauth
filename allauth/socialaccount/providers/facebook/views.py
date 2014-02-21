@@ -4,6 +4,8 @@ import requests
 from django.utils.cache import patch_response_headers
 from django.shortcuts import render
 
+from datetime import timedelta
+from django.utils import timezone
 
 from allauth.socialaccount.models import (SocialLogin,
                                           SocialToken)
@@ -29,6 +31,8 @@ def fb_complete_login(request, app, token):
     login = providers.registry \
         .by_id(FacebookProvider.id) \
         .sociallogin_from_response(request, extra_data)
+    token.expires_at = timezone.now() + timedelta(hours=2)
+    #token.save()
     return login
 
 

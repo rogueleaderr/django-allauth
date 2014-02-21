@@ -91,12 +91,26 @@
 
     var lockoutArea = $("#lockout_area");
     lockoutArea.keyup(function(event) {
-        if ($("#lockout_area input").val() === "friendship"){
+        if ($("#lockout_area input").val() === "tester"){
             lockoutArea.hide();
             $("#signup_area").show();
         }
     });
+    var $signupForm = $("#signup_form");
+    $signupForm.submit(function(){
+        $signupForm.submit(function(){
+            return false;
+        });
+        /*
+        //lastfmSubmit.prop("disabled", true);
+        $fbimportdiv.prop("disabled", true);
+        //mainSubmitButton.prop("disabled", true);
+        */
+
+
+    })
     </script>
+
 
 
 {% endblock %}

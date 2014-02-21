@@ -5,6 +5,9 @@ from django.http import HttpResponseRedirect
 from django.template import RequestContext
 from django.forms import ValidationError
 from django.core.urlresolvers import reverse
+from django.utils import timezone
+
+from datetime import timedelta
 
 from allauth.utils import get_user_model
 from allauth.account.utils import (perform_login, complete_signup,
@@ -54,6 +57,9 @@ def _process_signup(request, sociallogin):
 
 
 def _login_social_account(request, sociallogin):
+    sociallogin.token.expires_at = timezone.now() + timedelta(hours=2)
+    sociallogin.token.save()
+    print("updated token {} {}".format(sociallogin.token, sociallogin.token.expires_at))
     return perform_login(request, sociallogin.account.user,
                          email_verification=app_settings.EMAIL_VERIFICATION,
                          redirect_url=sociallogin.get_redirect_url(request),
@@ -136,7 +142,7 @@ def complete_social_signup(request, sociallogin):
     return complete_signup(request,
                            sociallogin.account.user,
                            app_settings.EMAIL_VERIFICATION,
-                           sociallogin.get_redirect_url(request),
+                           reverse("profile_setup"),
                            signal_kwargs={'sociallogin': sociallogin})
 
 

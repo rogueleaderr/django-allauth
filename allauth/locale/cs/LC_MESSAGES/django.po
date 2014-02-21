@@ -655,7 +655,7 @@ msgstr ""
 #, fuzzy, python-format
 msgid ""
 "You are about to use your %(provider_name)s account to login to\n"
-"%(site_name)s. As a final step, please complete the following form:"
+"%(site_name)s. As a final step, please pick a username and make sure your email is correct."
 msgstr ""
 "Nyní jste zažádali o přihlášení vašeho %(provider_name)s účtu na naše "
 "stránky %(site_name)s. Jako poslední krok, prosím, vyplňte tento formulář:"

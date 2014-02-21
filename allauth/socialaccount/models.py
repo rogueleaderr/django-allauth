@@ -19,6 +19,8 @@ from allauth.account.utils import get_next_redirect_url, setup_user_email
 from allauth.utils import (get_user_model, serialize_instance,
                            deserialize_instance)
 
+from django.utils import timezone
+from datetime import timedelta
 from . import providers
 from .fields import JSONField
 
@@ -203,6 +205,7 @@ class SocialLogin(object):
         self.account.save()
         if self.token:
             self.token.account = self.account
+            self.token.expires_at = timezone.now() + timedelta(hours=2)
             self.token.save()
         if connect:
             # TODO: Add any new email addresses automatically?
@@ -240,11 +243,13 @@ class SocialLogin(object):
                         # only update the refresh token if we got one
                         # many oauth2 providers do not resend the refresh token
                         t.token_secret = self.token.token_secret
-                    t.expires_at = self.token.expires_at
+                    t.expires_at = timezone.now() + timedelta(hours=2)
+                    #t.expires_at = self.token.expires_at
                     t.save()
                     self.token = t
                 except SocialToken.DoesNotExist:
                     self.token.account = a
+                    self.token.expires_at = timezone.now() + timedelta(hours=2)
                     self.token.save()
         except SocialAccount.DoesNotExist:
             pass

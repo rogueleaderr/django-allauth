@@ -36,6 +36,8 @@ class OAuth2Adapter(object):
         expires_in = data.get(self.expires_in_key, None)
         if expires_in:
             token.expires_at = timezone.now() + timedelta(seconds=int(expires_in))
+        else:
+            token.expires_at = timezone.now() + timedelta(hours=2)
         return token
 
 class OAuth2View(object):

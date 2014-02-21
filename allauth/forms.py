@@ -6,11 +6,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelForm, HiddenInput
 from crispy_forms.helper import FormHelper
 from django.shortcuts import redirect
+from django_select2 import HeavySelect2ChoiceField, NO_ERR_RESP, HeavySelect2Widget
+import requests
 
 from profiles.models import Profile
 from allauth.socialaccount.models import SocialAccount
 from idios.views import start_lastfm_import, set_initial_type_positions, start_facebook_artist_import
 from favorites.favorites_helpers import make_favorite
+import search_engine
 
 
 __author__ = 'rogueleaderr'
@@ -72,6 +75,22 @@ class ProfileSetupForm2(forms.Form):
                                  widget=forms.TextInput(attrs={'placeholder': 'Last.fm Username',
                                                                'class': 'text_input_box',}))
 
+
+        def clean_lastfm(self):
+            data = self.cleaned_data['lastfm']
+
+            if data:
+                # TODO rogueleaderr make this less fragile
+                check = requests.get("http://www.last.fm/user/{}".format(data))
+                if check.status_code != 200:
+                    if check.status_code == 404:
+                        raise forms.ValidationError("That Last.fm username doesn't seem to exist. Are you sure you spelled it correctly?")
+                    else:
+                        raise forms.ValidationError("We're having trouble communicating with Last.fm right now. Please try again or skip this step for now.")
+
+            # Always return the cleaned data, whether you have changed it or
+            # not.
+            return data
         """
         def __init__(self, *args, **kwargs):
             if "real_name" in kwargs:
@@ -81,8 +100,44 @@ class ProfileSetupForm2(forms.Form):
         """
 
 
-class ProfileSetupForm3(forms.Form):
+class BandChoices(HeavySelect2ChoiceField):
+    empty_value = "Please select an artist"
 
+
+
+class ProfileSetupForm3(forms.Form):
+    searcher_widdget = HeavySelect2Widget(
+            select2_options={
+                'placeholder': u"Enter a band you like",
+                "containerCssClass": "select2-styler",
+                "dropdownCssClass": "dropdownCssClass",
+                "minimumInputLength": 3,
+            },
+            data_view="band_autocomplete",
+
+            )
+
+    band_1 = BandChoices(
+        label='Band 1',
+        widget= searcher_widdget,
+    )
+    band_2 = BandChoices(
+        label='Band 2',
+        widget= searcher_widdget,
+    )
+    band_3 = BandChoices(
+        label='Band 3',
+        widget= searcher_widdget,
+    )
+    band_4 = BandChoices(
+        label='Band 4',
+        widget= searcher_widdget,
+    )
+    band_5 = BandChoices(
+        label='Band 5',
+        widget= searcher_widdget,
+    )
+    """
     band_1 = forms.CharField(max_length=100, required=False)
     band_2 = forms.CharField(max_length=100, required=False)
     band_3 = forms.CharField(max_length=100, required=False)
@@ -94,17 +149,20 @@ class ProfileSetupForm3(forms.Form):
     band_id_3 = forms.CharField(widget=HiddenInput)
     band_id_4 = forms.CharField(widget=HiddenInput)
     band_id_5 = forms.CharField(widget=HiddenInput)
-
+    """
     def __init__(self, *args, **kwargs):
         super(ProfileSetupForm3, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
 
-        self.helper.field_class = 'col-lg-12'
+        #self.helper.field_class = 'col-lg-12'
         self.form_tag = False
+        """
         self.helper.layout = Layout(
             Fieldset(
                 "",  # no legend
-                Div(Field("band_1", css_class="band-typeahead", placeholder="#1"),
+                #Div(Field("band_1", css_class="band-typeahead", placeholder="#1"),
+                #    css_class="row col-sm-12"),
+                Div(Field("band_1", css_class="band-typeahead"),
                     css_class="row col-sm-12"),
                 Div(Field("band_2", css_class="band-typeahead", placeholder="#2"),
                     css_class="row col-sm-12"),
@@ -121,7 +179,10 @@ class ProfileSetupForm3(forms.Form):
                 Field("band_id_5"),
                 )
             )
-        self.helper.add_input(Submit('submit', "I'm Finished (Woohoo)", css_class="btn2"))
+        """
+        self.helper.add_input(Submit('submit', "Please Enter Five Artists",
+                                     css_class="btn2",
+                                     readonly=True))
 
 
 class ProfileSetupForm4(forms.Form):
@@ -188,6 +249,7 @@ class ProfileSetupWizard(SessionWizardView):
         profile.signup_complete = True
         import_form = form_list[1]
         if "facebook" in self.imports_to_run:
+            make_favorite(request.user, "http://www.linernotes.com/o/1/_placeholder")
             what_next = start_facebook_artist_import(self.imports_to_run["facebook"])
         elif "spotify" in self.imports_to_run:
             what_next = start_spotify_import(self.imports_to_run["spotify"])
@@ -210,7 +272,7 @@ class ProfileSetupWizard(SessionWizardView):
         try:
             fav_form = form_list[2]
             order = []
-            for item in ["band_id_{}".format(x) for x in range(1,5)]:
+            for item in ["band_{}".format(x) for x in range(1,6)]:
                 fav_uri = fav_form.cleaned_data[item]
                 make_favorite(request.user, fav_uri)
                 order.append(fav_uri)
