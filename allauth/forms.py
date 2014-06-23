@@ -237,8 +237,6 @@ class ProfileSetupWizard(SessionWizardView):
         return context
 
 
-
-
     def done(self, form_list, **kwargs):
         request = self.request
         profile_data = form_list[0].cleaned_data
@@ -256,12 +254,12 @@ class ProfileSetupWizard(SessionWizardView):
         elif "lastfm" in self.imports_to_run:
             cleaned_data = self.get_cleaned_data_for_step('import_names') or {}
             if "lastfm" in cleaned_data:
-                what_next = start_lastfm_import(cleaned_data["lastfm"],
+                lastfm_id = cleaned_data["lastfm"]
+                what_next = start_lastfm_import(lastfm_id,
                                     self.imports_to_run["lastfm"])
                 profile.lastfm_artists_imported = True
-                print("LASST start")
-            else:
-                import pdb ; pdb.set_trace()
+                profile.lastfm_id = lastfm_id
+                profile.save()
         else:
             messages.add_message(request, messages.INFO, "Added your top 5 artists to your collection. Check them out below!")
             what_next = redirect("what_next")
