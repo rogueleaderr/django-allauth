@@ -1,7 +1,7 @@
 from crispy_forms.layout import Layout, Field, HTML, Fieldset, Div, Submit
 from django.contrib import messages
 from django.contrib.formtools.wizard.views import SessionWizardView
-from django.contrib.localflavor.us.forms import USZipCodeField
+from localflavor.us.forms import USZipCodeField
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelForm, HiddenInput
 from crispy_forms.helper import FormHelper
